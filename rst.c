@@ -6,27 +6,32 @@ int main(void){
 
   char c;
 
-  char check[2];
+  char check[2]; 
 
-  char word[5];
+  char word[7];
 
   char code[4] = "RST";
   
   int counter = 0;
   while((c = getc(inStream)) != EOF){
-    //check[2] = c;
+    
+    char *ptr = &c;
+    //fprintf(outStream, "%c", *ptr);
+    
     word[counter] = c;
-    if (counter == 6){
-      counter = 1;
-      printf("%s", word);
+
+    if (((*ptr) == ' ' || ((*ptr) == '\n') || ((*ptr) == '\t'))){
+      for(int i=0; i < counter; i++){
+	fprintf(outStream, "%c", word[counter]);
+	printf("%d", word[counter]);
+      }
+      counter = 0;
     }
 
-    counter++;
-    //if (word[2] == code[2]){
-    //  printf("%s", word);
-    //  fprintf(outStream, "%s", word);
-     
-    // }
+    counter ++;
+    
+      
+      
     
      
   }
