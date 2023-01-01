@@ -5,33 +5,33 @@ int main(void){
   FILE* outStream = fopen("output.asm", "w");
 
   char c;
-
-  char check[2]; 
-
-  char word[7];
-
-  char code[4] = "RST";
-  
+  char word[30];
+  char rstCode[4] = "RST";
+    
   int counter = 0;
   while((c = getc(inStream)) != EOF){
-    
-    char *ptr = &c;
-    //fprintf(outStream, "%c", *ptr);
-    
     word[counter] = c;
 
-    if (((*ptr) == ' ' || ((*ptr) == '\n') || ((*ptr) == '\t'))){
-      for(int i=0; i < counter; i++){
-	if(word[i] == 'R' && word[i + 1] == 'S' && word[i + 2] == 'T'){
-	  printf("%s", "AND");
+    if (c == '\n'){
+      //printf("%s", word);
+      for (int i = 0; i < counter; i ++){
+	if (word[i] == 'R' && word[i + 1] == 'S' && word[i+2] == 'T'){
+	  printf("%s", "AND ");
+	  printf("%c", word[i+4]);
+	  printf("%c", word[i+5]);
+	  printf("%s", ", #0");
+	  
+	    
+	  break;
 	}
-      }
-      counter = 0;
+	printf("%c", word[i]);
     }
+      printf("%c", '\n');
+      counter = -1;
+    }
+      
 
     counter ++;
-    
-      
       
     
      
