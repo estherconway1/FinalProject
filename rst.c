@@ -4,21 +4,36 @@ int main(void){
   FILE* inStream = fopen("test1.asm", "r");
   FILE* outStream = fopen("output.asm", "w");
 
-  char data;
+  char c;
 
-  int counter = 0;
-  while((fscanf(inStream, "%s", &data)) != EOF){
+  char check[2];
 
-    int output = data;
-    fprintf(outStream, "%s", &data);
-    if (output == "\n"){
-      fprintf(outStream, "%s", "\n");
-    }
+  char word[5];
+
+  char code[4] = "RST";
   
-  counter++;
+  int counter = 0;
+  while((c = getc(inStream)) != EOF){
+    //check[2] = c;
+    word[counter] = c;
+    if (counter == 6){
+      counter = 1;
+      printf("%s", word);
+    }
+
+    counter++;
+    //if (word[2] == code[2]){
+    //  printf("%s", word);
+    //  fprintf(outStream, "%s", word);
+     
+    // }
+    
+     
   }
 
-  //fclose(inStream);
+    
+
+  fclose(inStream);
   fclose(outStream);
   
 
