@@ -20,18 +20,32 @@ int main(void){
       //printf("%s", word);
       for (int i = 0; i < counter; i ++){
 	if (word[i] == 'S' && word[i + 1] == 'U' && word[i+2] == 'B'){
-	  register1[0] = word[i+4];
-	  register1[1] = word[i+5];
+	  int offset = i + 2;
+	  while(word[offset] != 'R'){
+	    offset ++;
+	  }
+	  register1[0] = word[offset];
+	  register1[1] = word[offset + 1];
+	  offset ++;
 
-	  register2[0] = word[i+6];
-	  register2[1] = word[i+7];
+	  while(word[offset] != 'R'){
+	    offset += 1;
+	  }
 
-	  register3[0] = word[i+9];
-	  register3[1] = word[i+10];
+	  register2[0] = word[offset];
+	  register2[1] = word[offset + 1];
+	  offset ++;
+
+	  while(word[offset] != 'R' && word[offset] != '#' ){
+	    offset += 1;
+	  }
+
+	  register3[0] = word[offset];
+	  register3[1] = word[offset + 1];
 	  
 	  fprintf(outStream, "%s%s%s%s\n", "NOT\t", register2, ", ", register2);
-	  fprintf(outStream, "\t%s%s%s%s%s\n", "ADD ", register2, ", ", register2, ", #1");
-	  fprintf(outStream, "\t%s%s%s%s%s%s", "ADD ", register1, ", ", register2, ", ", register3);
+	  fprintf(outStream, "\t%s%s%s%s%s\n", "ADD\t", register2, ", ", register2, ", #1");
+	  fprintf(outStream, "\t%s%s%s%s%s%s", "ADD\t", register1, ", ", register2, ", ", register3);
 	  
 	  break;
 	}
