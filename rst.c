@@ -22,8 +22,9 @@ int main(void){
 
     if (((*ptr) == ' ' || ((*ptr) == '\n') || ((*ptr) == '\t'))){
       for(int i=0; i < counter; i++){
-	fprintf(outStream, "%c", word[counter]);
-	printf("%d", word[counter]);
+	if(word[i] == 'R' && word[i + 1] == 'S' && word[i + 2] == 'T'){
+	  printf("%s", "AND");
+	}
       }
       counter = 0;
     }
