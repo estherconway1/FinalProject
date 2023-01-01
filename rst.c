@@ -18,27 +18,22 @@ int main(void){
   
   int counter = 0;
   while((c = getc(inStream)) != EOF){
+    
     //printf("%c", c);
     
     word[counter] = c;
 
-    if ((c == '\n')){
+    if ((c == ' ')){
       if (word[0] == 'R' && word[1] == 'S' && word[2] == 'T'){
 	printf("%s", word);
 	fprintf(outStream, "%s", "AND");
-	//fprintf(outStream, "%c", word[4]);
-	//fprintf(outStream, "%c", word[5]);
-	//fprintf(outStream, "%s", ", #0\n");
-	//counter = 0;
-	}
-      //else{
-      // for(int i = 0; i <= counter; i++){
-      //     fprintf(outStream, "%c", word[i]);
-    counter = 0;
+      }
+      
+      counter = -1;
     }
     counter ++;
     
-    }
+  }
       
     
  
