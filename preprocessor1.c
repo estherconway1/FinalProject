@@ -42,8 +42,17 @@ int main(void){
 	  }
 	  register1[0] = word[offset];
 	  register1[1] = word[offset + 1];
+	  offset++;
+
+	   while(word[offset] != '#'){
+	    offset ++;
+	  }
+	  register2[0] = word[offset];
+	  register2[1] = word[offset + 1];
+	   
 	  word[offset + 1];
 	  fprintf(outStream, "%s%s%s%s%s", "AND\t", register1, ", ", register1, ", #0");
+	  fprintf(outStream, "%s%s%s%s%s", "ADD\t", register1, ", ", register1, ", ",  register2);
 	  register1[1] = ' ';
 	  break;
 	}
