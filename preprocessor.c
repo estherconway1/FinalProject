@@ -9,7 +9,7 @@ int main(void){
   char register1[3]; // Holds the 1st operand in the instructions we're editing
   char register2[3]; // Holds the 2nd operand
   char register3[3]; // Holds the 3rd operand
-  int registerPosition = 0;
+  int operandSize = 0;
 
   
     
@@ -35,7 +35,7 @@ int main(void){
 	  //Save the register
 	  register1[0] = word[offset];
 	  register1[1] = word[offset + 1];
-	  if ((register1[0] != 'R') || (register1[1] < 48  ||  register1[1] > 57)){
+	  if (((register1[0] != 'R') ) || (register1[1] < 48  ||  register1[1] > 57)){
 	    fprintf(stderr, "ERROR: OPERAND SHOULD BE A REGISTER\n");
 	    fprintf(outStream, "%s", "ERROR: OPERAND SHOULD BE A REGISTER");
 	    break;
@@ -59,23 +59,35 @@ int main(void){
 	  register1[1] = word[offset + 1];
 	  offset++;
 
-	  registerPosition = 0;
 	  while(word[offset] != '#' && word[offset] != '\n'){
 	    offset ++;
-	    registerPosition ++;
 	   }
-	  register2[0] = word[offset];
-	  register2[1] = word[offset + 1];
-	  offset++;
+	  
+	  if (word[offset] == '\n'){break;}
+
+	  operandSize = 0;
+	  int wordPos = offset;
+	  while (word[wordPos] != '\n'){
+	    operandSize++;
+	    wordPos++;
+	    
+	    
+	  }
+
+	  char operand[operandSize];
+
+	  for (int j = 0; j <= operandSize; j++){
+	    operand[j] = word[offset];
+	    printf("%c", word[offset]);
+	    offset++;
+	  }
 	  	   
-	  word[offset + 1];
 	  fprintf(outStream, "%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
-	  fprintf(outStream, "\t%s%s%s%s%s%s", "ADD\t", register1, ", ", register1, ", ",  register2);
-	  register1[1] = ' ';
+	  fprintf(outStream, "\t%s%s%s%s%s%s", "ADD\t", register1, ", ", register1, ", ",  operand);
 	  break;
 	}
 
-	//If the computer  encounters the opcode SUB replace with the instructions to subtract the registers (negate second register and add to the first)
+	//SUB replace with the instructions to subtract the registers (negate second register and add to the first)
 	if (word[i] == 'S' && word[i + 1] == 'U' && word[i+2] == 'B'){
 	  int offset = i + 2;
 	  while(word[offset] != 'R'){
@@ -117,6 +129,8 @@ int main(void){
 	  register1[0] = word[offset];
 	  register1[1] = word[offset + 1];
 	  offset++;
+
+	  //Make sure that the first operand is in the proper format
 	  if ((register1[0] != 'R') || (register1[1] < 48  ||  register1[1] > 57)){
 	    fprintf(stderr, "ERROR: OPERAND SHOULD BE A REGISTER\n");
 	    fprintf(outStream, "%s", "ERROR: OPERAND SHOULD BE A REGISTER");
@@ -131,13 +145,13 @@ int main(void){
 	  register2[0] = word[offset];
 	  register2[1] = word[offset + 1];
 	  offset++;
+	  
+	  //Make sure that the second operand is in the proper format
 	  if ((register2[0] != 'R') || (register2[1] < 48  ||  register2[1] > 57)){
 	    fprintf(stderr, "ERROR: OPERAND SHOULD BE A REGISTER\n");
 	    fprintf(outStream, "%s", "ERROR: OPERAND SHOULD BE A REGISTER");
 	    break;
 	  }
-
-	fprintf(outStream, "%c", word[i]);
 
 	while(word[offset] != 'R'){
 	    offset ++;
@@ -146,25 +160,31 @@ int main(void){
 	  register3[0] = word[offset];
 	  register3[1] = word[offset + 1];
 	  offset++;
-	  if ((register2[0] != 'R') || (register2[1] < 48  ||  register2[1] > 57)){
+
+	  //Make sure that the third operand is in the proper format
+	  if ((register3[0] != 'R') || (register3[1] < 48  ||  register3[1] > 57)){
 	    fprintf(stderr, "ERROR: OPERAND SHOULD BE A REGISTER\n");
 	    fprintf(outStream, "%s", "ERROR: OPERAND SHOULD BE A REGISTER");
 	    break;
 	  }
 
-	  fprintf(outStream, "\t%s\t%s\n", ".FILL", "#0");
+ //Print out the new instructions. Which are:
+	  //Allocate a memory location
+	  fprintf(outStream, "%s\t%s\n", ".FILL", "#0");
+	  //Save the contents of the second operand register at that location
 	  fprintf(outStream, "\t%s\t%s%s\n", "ST", register2, ", #-2");
+	  //Clear the destination register
 	  fprintf(outStream, "\t%s\t%s%s\n", "AND", register1, ", #0");
+	  
+	  //Repeatedly add, and decrement the register until it is 0
 	  fprintf(outStream, "\t%s\t%s%s%s%s%s\n", "ADD", register1, ", ", register1, ", ", register3);
 	  fprintf(outStream, "\t%s\t%s%s%s%s\n", "ADD", register2, ", ", register2, ", #-1");
 	  fprintf(outStream, "\t%s\t%s\n", "BRp", "#-3");
-	  fprintf(outStream, "\t%s\t%s%s\n", "LD", register2, ", #-7");
-	  
-	  
+	  //Restore the contents of the counter register
+	  fprintf(outStream, "\t%s\t%s%s\n", "LD", register2, ", #-7");	  
 
 	  break;
-
-	}
+      }
 
 	fprintf(outStream, "%c", word[i]);
       
