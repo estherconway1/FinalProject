@@ -17,7 +17,7 @@ int main(void){
     //Add the current character to the array
     word[counter] = c;
 
-    //If the character is a newline, check if it needs to be changed
+    //When we reach the end of a line, check if it needs to be changed
     if (c == '\n'){
       //Examine the characters stored in the word[] array
       for (int i = 0; i < counter; i ++){
@@ -49,22 +49,29 @@ int main(void){
 
 	//SET a register to a decimal number
 	if (word[i] == 'S' && word[i + 1] == 'E' && word[i+2] == 'T'){
-	  
 	  int offset = i + 2;
+	  
+	  //Search for the register we want to set
 	  while(word[offset] != 'R'){
 	    offset ++;
 	  }
+	  //Save the register
 	  register1[0] = word[offset];
 	  register1[1] = word[offset + 1];
 	  offset++;
 
+	  //Search for the position in the word[] array of the number that we want
 	  while(word[offset] != '#' && word[offset] != '\n'){
 	    offset ++;
 	   }
-	  
-	  if (word[offset] == '\n'){break;}
+
+	  //Give an error if there is no second operand
+	  if (word[offset] == '\n'){
+	    fprintf(stderr, "ERROR: OPERAND SHOULD BE A NUMBER IN DECIMAL FORM");
+	    break;}
 
 
+	  //Make sure that it is in the proper format
 	 int wordPos = offset;
 	 int operandSize = 0;
 	  while (word[wordPos] != '\n'){
@@ -79,7 +86,8 @@ int main(void){
 	  	   
 	  fprintf(outStream, "%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
 	  fprintf(outStream, "\t%s%s%s%s%s", "ADD\t", register1, ", ", register1, ", ");
-	  
+
+	  //Print out the second operand
 	  for (int j = 0; j < operandSize; j++){
 	    fprintf(outStream, "%c", word[offset]);	    
 	    offset++;
@@ -92,7 +100,7 @@ int main(void){
 
 	//SUB replace with the instructions to subtract the registers (negate second register and add to the first)
 	if (word[i] == 'S' && word[i + 1] == 'U' && word[i+2] == 'B'){
-	  
+	  	  
 	  int offset = i + 2;
 	  while(word[offset] != 'R'){
 	    offset ++;
@@ -109,19 +117,57 @@ int main(void){
 	  register2[1] = word[offset + 1];
 	  offset ++;
 
-	  while(word[offset] != 'R' && word[offset] != '\n'){
+	  while(word[offset] != 'R' && word[offset] != '\n' && word[offset] != '#'){
 	    offset += 1;
 	  }
 
-	  register3[0] = word[offset];
-	  register3[1] = word[offset + 1];
+	  char thirdOperandType;
+
+	  int operandSize;
+	  if(word[offset] == 'R'){
+	    thirdOperandType = 'R';
+	    operandSize = 2;
+	  }
+
+	  if (word[offset] == '#'){
+	    thirdOperandType = '#';
+	    int wordPos = offset;
+	    operandSize = 0;
+	    while (word[wordPos] != '\n'){
+	      operandSize++;
+	      wordPos++;
+	    }
+	  }
 	  
-	  fprintf(outStream, "%s%s%s%s\n", "NOT\t", register3, ", ", register3);
-	  fprintf(outStream, "\t%s%s%s%s%s\n", "ADD\t", register3, ", ", register3, ", #1");
-	  fprintf(outStream, "\t%s%s%s%s%s%s", "ADD\t", register1, ", ", register2, ", ", register3);
+	  char operand3[operandSize + 1];
+	  for (int j = 0; j < operandSize; j++){
+	    operand3[j] = word[offset + j];	    
+	    //offset++;
+	  }
+	  if (thirdOperandType == 'R'){
+	  fprintf(outStream, "%s\t%s\n", ".FILL", "#0");
+	  fprintf(outStream, "\t%s\t%s%s\n", "ST", operand3, ", #-2");
+	  fprintf(outStream, "\t%s%s%s%s\n", "NOT\t", operand3, ", ", operand3);
+	  fprintf(outStream, "\t%s%s%s%s%s\n", "ADD\t", operand3, ", ", operand3, ", #1");
+	  fprintf(outStream, "\t%s%s%s%s%s%s\n", "ADD\t", register1, ", ", register2, ", ", operand3);
+	  fprintf(outStream, "\t%s\t%s%s", "LD", operand3, ", #-6");
+	  }
+	  
+	  if (thirdOperandType == '#'){
+	  fprintf(outStream, "%s\t%s\n", ".FILL", "#0");
+	  fprintf(outStream, "\t%s\t%s%s\n", "ST", "R0", ", #-2");
+	  fprintf(outStream, "\t%s\t%s%s%s\n", "AND", "R0, ", " R0, ", " #0");
+	  fprintf(outStream, "\t%s\t%s, %s, %s\n", "ADD", "R0", "R0", operand3);
+	  
+	  fprintf(outStream, "\t%s\t%s\n", "NOT", "R0, R0");
+	  fprintf(outStream, "\t%s\t%s%s%s%s\n", "ADD", "R0", ", ", "R0", ", #1");
+	  fprintf(outStream, "\t%s\t%s, %s, %s\n", "ADD", register1, register2, "R0");
+	  fprintf(outStream, "\t%s\t%s%s", "LD", "R0", ", #-8");
+	  }
 	  
 	  break;
 	}
+	
 	
 	//MLT
 	if (word[i] == 'M' && word[i + 1] == 'L' && word[i+2] == 'T'){
@@ -189,11 +235,13 @@ int main(void){
 
 	  break;
       }
-
+	//If there is no instruction to change, print out the line
 	fprintf(outStream, "%c", word[i]);
       
     }
       fprintf(outStream, "%c", '\n');
+
+      //Reset the counter that keeps track of the position we are at in the word[] array
       counter = -1;
     }
       
