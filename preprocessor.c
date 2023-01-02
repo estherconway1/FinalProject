@@ -74,16 +74,15 @@ int main(void){
 	    
 	  }
 
-	  char operand[operandSize];
-
-	  for (int j = 0; j <= operandSize; j++){
-	    operand[j] = word[offset];
-	    printf("%c", word[offset]);
-	    offset++;
-	  }
+    
+	  // printf("%s", operand);
 	  	   
 	  fprintf(outStream, "%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
-	  fprintf(outStream, "\t%s%s%s%s%s%s", "ADD\t", register1, ", ", register1, ", ",  operand);
+	  fprintf(outStream, "\t%s%s%s%s%s", "ADD\t", register1, ", ", register1, ", ");
+	  for (int j = 0; j < operandSize; j++){
+	    fprintf(outStream, "%c", word[offset]);
+	    offset++;
+	  }
 	  break;
 	}
 
