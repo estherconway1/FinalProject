@@ -9,8 +9,7 @@ int main(void){
   char register1[3]; // Holds the 1st operand in the instructions we're editing
   char register2[3]; // Holds the 2nd operand
   char register3[3]; // Holds the 3rd operand
-  int operandSize = 0;
-
+  
   
     
   int counter = 0; //Holds the position that we are up to in the array that holds the line (word[])
@@ -66,7 +65,8 @@ int main(void){
 	  if (word[offset] == '\n'){break;}
 
 
-	  int wordPos = offset;
+	 int wordPos = offset;
+	 int operandSize = 0;
 	  while (word[wordPos] != '\n'){
 	    operandSize++;
 	    if ((word[wordPos] < '0' || word[wordPos] > '9') && wordPos > offset){
@@ -79,10 +79,12 @@ int main(void){
 	  	   
 	  fprintf(outStream, "%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
 	  fprintf(outStream, "\t%s%s%s%s%s", "ADD\t", register1, ", ", register1, ", ");
+	  
 	  for (int j = 0; j < operandSize; j++){
-	    fprintf(outStream, "%c", word[offset]);
+	    fprintf(outStream, "%c", word[offset]);	    
 	    offset++;
 	  }
+       
 	  break;
 
 	  
@@ -90,6 +92,7 @@ int main(void){
 
 	//SUB replace with the instructions to subtract the registers (negate second register and add to the first)
 	if (word[i] == 'S' && word[i + 1] == 'U' && word[i+2] == 'B'){
+	  
 	  int offset = i + 2;
 	  while(word[offset] != 'R'){
 	    offset ++;
@@ -106,7 +109,7 @@ int main(void){
 	  register2[1] = word[offset + 1];
 	  offset ++;
 
-	  while(word[offset] != 'R' && word[offset] != '\n' ){
+	  while(word[offset] != 'R' && word[offset] != '\n'){
 	    offset += 1;
 	  }
 
