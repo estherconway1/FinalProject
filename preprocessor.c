@@ -93,7 +93,7 @@ int main(void){
 	  register2[1] = word[offset + 1];
 	  offset ++;
 
-	  while(word[offset] != 'R' && word[offset] != '#' && word[offset] != '\n' ){
+	  while(word[offset] != 'R' && word[offset] != '\n' ){
 	    offset += 1;
 	  }
 
@@ -105,6 +105,65 @@ int main(void){
 	  fprintf(outStream, "\t%s%s%s%s%s%s", "ADD\t", register1, ", ", register2, ", ", register3);
 	  
 	  break;
+	}
+	
+	//MLT
+	if (word[i] == 'M' && word[i + 1] == 'L' && word[i+2] == 'T'){
+	  int offset = i + 2;
+	  while(word[offset] != 'R'){
+	    offset ++;
+
+	  }
+	  register1[0] = word[offset];
+	  register1[1] = word[offset + 1];
+	  offset++;
+	  if ((register1[0] != 'R') || (register1[1] < 48  ||  register1[1] > 57)){
+	    fprintf(stderr, "ERROR: OPERAND SHOULD BE A REGISTER\n");
+	    fprintf(outStream, "%s", "ERROR: OPERAND SHOULD BE A REGISTER");
+	    break;   
+	  }
+
+	  
+	  while(word[offset] != 'R'){
+	    offset ++;
+
+	  }
+	  register2[0] = word[offset];
+	  register2[1] = word[offset + 1];
+	  offset++;
+	  if ((register2[0] != 'R') || (register2[1] < 48  ||  register2[1] > 57)){
+	    fprintf(stderr, "ERROR: OPERAND SHOULD BE A REGISTER\n");
+	    fprintf(outStream, "%s", "ERROR: OPERAND SHOULD BE A REGISTER");
+	    break;
+	  }
+
+	fprintf(outStream, "%c", word[i]);
+
+	while(word[offset] != 'R'){
+	    offset ++;
+
+	  }
+	  register3[0] = word[offset];
+	  register3[1] = word[offset + 1];
+	  offset++;
+	  if ((register2[0] != 'R') || (register2[1] < 48  ||  register2[1] > 57)){
+	    fprintf(stderr, "ERROR: OPERAND SHOULD BE A REGISTER\n");
+	    fprintf(outStream, "%s", "ERROR: OPERAND SHOULD BE A REGISTER");
+	    break;
+	  }
+
+	  fprintf(outStream, "\t%s\t%s\n", ".FILL", "#0");
+	  fprintf(outStream, "\t%s\t%s%s\n", "ST", register2, ", #-2");
+	  fprintf(outStream, "\t%s\t%s%s\n", "AND", register1, ", #0");
+	  fprintf(outStream, "\t%s\t%s%s%s%s%s\n", "ADD", register1, ", ", register1, ", ", register3);
+	  fprintf(outStream, "\t%s\t%s%s%s%s\n", "ADD", register2, ", ", register2, ", #-1");
+	  fprintf(outStream, "\t%s\t%s\n", "BRp", "#-3");
+	  fprintf(outStream, "\t%s\t%s%s\n", "LD", register2, ", #-7");
+	  
+	  
+
+	  break;
+
 	}
 
 	fprintf(outStream, "%c", word[i]);
