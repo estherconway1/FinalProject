@@ -5,7 +5,7 @@ int main(void){
   FILE* outStream = fopen("output.asm", "w");
 
   char c;            // Holds the current character from the input stream
-  char word[100];    // Holds the current line
+  char word[50];    // Holds the current line
   char register1[3]; // Holds the 1st operand in the instructions we're editing
   char register2[3]; // Holds the 2nd operand
   char register3[3]; // Holds the 3rd operand
@@ -13,7 +13,7 @@ int main(void){
 
   
     
-  int counter = 0; //Holds the possition that we are up to in the array that holds the line (word[])
+  int counter = 0; //Holds the position that we are up to in the array that holds the line (word[])
   while((c = getchar()) != EOF){
     //Add the current character to the array
     word[counter] = c;
@@ -48,7 +48,7 @@ int main(void){
 	  break;
 	}
 
-	//SET a register - more complicated than originally thought because operand can be an number of variable length
+	//SET a register to a decimal number
 	if (word[i] == 'S' && word[i + 1] == 'E' && word[i+2] == 'T'){
 	  
 	  int offset = i + 2;
@@ -65,17 +65,17 @@ int main(void){
 	  
 	  if (word[offset] == '\n'){break;}
 
-	  operandSize = 0;
+
 	  int wordPos = offset;
 	  while (word[wordPos] != '\n'){
 	    operandSize++;
+	    if ((word[wordPos] < '0' || word[wordPos] > '9') && wordPos > offset){
+	      fprintf(stderr, "ERROR: OPERAND SHOULD BE A NUMBER IN DECIMAL FORM");
+	      fprintf(outStream,"%s", "ERROR: OPERAND SHOULD BE A NUMBER IN DECIMAL FORM");
+	      break;
+	    }
 	    wordPos++;
-	    
-	    
 	  }
-
-    
-	  // printf("%s", operand);
 	  	   
 	  fprintf(outStream, "%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
 	  fprintf(outStream, "\t%s%s%s%s%s", "ADD\t", register1, ", ", register1, ", ");
@@ -84,6 +84,8 @@ int main(void){
 	    offset++;
 	  }
 	  break;
+
+	  
 	}
 
 	//SUB replace with the instructions to subtract the registers (negate second register and add to the first)
@@ -173,7 +175,7 @@ int main(void){
 	  //Save the contents of the second operand register at that location
 	  fprintf(outStream, "\t%s\t%s%s\n", "ST", register2, ", #-2");
 	  //Clear the destination register
-	  fprintf(outStream, "\t%s\t%s%s\n", "AND", register1, ", #0");
+	  fprintf(outStream, "\t%s\t%s%s%s%s\n", "AND", register1, ", ", register1, ", #0");
 	  
 	  //Repeatedly add, and decrement the register until it is 0
 	  fprintf(outStream, "\t%s\t%s%s%s%s%s\n", "ADD", register1, ", ", register1, ", ", register3);
