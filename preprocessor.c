@@ -8,7 +8,7 @@ int main(void){
   char word[50];    // Holds the current line
   char register1[3]; // Holds the 1st operand in the instructions we're editing
   char register2[3]; // Holds the 2nd operand
-  char register3[3]; // Holds the 3rd operand
+  char register3[3]; // Holds the 3rd operandz
   
   
     
@@ -48,7 +48,7 @@ int main(void){
 	}
 
 	//SET a register to a decimal number
-	if (word[i] == 'S' && word[i + 1] == 'E' && word[i+2] == 'T'){
+	if (word[i] == 'S' && word[i + 1] == 'E' && word[i + 2] == 'T'){
 	  int offset = i + 2;
 	  
 	  //Search for the register we want to set
@@ -72,26 +72,26 @@ int main(void){
 
 
 	  //Make sure that it is in the proper format
-	 int wordPos = offset;
-	 int operandSize = 0;
-	  while (word[wordPos] != '\n'){
-	    operandSize++;
-	    if ((word[wordPos] < '0' || word[wordPos] > '9') && wordPos > offset){
-	      fprintf(stderr, "ERROR: OPERAND SHOULD BE A NUMBER IN DECIMAL FORM");
-	      fprintf(outStream,"%s", "ERROR: OPERAND SHOULD BE A NUMBER IN DECIMAL FORM");
-	      break;
-	    }
-	    wordPos++;
-	  }
-	  	   
-	  fprintf(outStream, "%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
-	  fprintf(outStream, "\t%s%s%s%s%s", "ADD\t", register1, ", ", register1, ", ");
+	  int operandSize = 0;
 
-	  //Print out the second operand
-	  for (int j = 0; j < operandSize; j++){
-	    fprintf(outStream, "%c", word[offset]);	    
-	    offset++;
+	  if (word[offset] == '#'){
+	    int wordPos = offset;
+	    operandSize = 0;
+	    while (word[wordPos] != '\n'){
+	      operandSize++;
+	      wordPos++;
+	    }
 	  }
+	  
+	  char operand2[operandSize + 1] = "hi";
+	  //for (int j = 0; j < operandSize; j++){
+	  //operand2[j] = word[offset + j];
+	  //fprintf(outStream, "%d", j);
+	  //}
+	  	   
+	  fprintf(outStream, "%s\t%s, %s, %s\n", "AND", register1, register1, "#0");
+	  fprintf(outStream, "\t%s\t%s, %s, %s", "ADD", register1, register1, operand2);
+
        
 	  break;
 
@@ -121,7 +121,7 @@ int main(void){
 	    offset += 1;
 	  }
 
-	  char thirdOperandType;
+	  char thirdOperandType = ' ';
 
 	  int operandSize;
 	  if(word[offset] == 'R'){
@@ -142,7 +142,6 @@ int main(void){
 	  char operand3[operandSize + 1];
 	  for (int j = 0; j < operandSize; j++){
 	    operand3[j] = word[offset + j];	    
-	    //offset++;
 	  }
 	  if (thirdOperandType == 'R'){
 	  fprintf(outStream, "%s\t%s\n", ".FILL", "#0");
