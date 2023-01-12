@@ -1,8 +1,8 @@
 #include <stdio.h>
 
+FILE* outStream;
 
-int RST(char line[], int position, FILE* outStream){
-  //FILE* outStream = fopen("output.asm", "a");
+int RST(char line[], int position){
   
   char register1[3];
   
@@ -14,9 +14,8 @@ int RST(char line[], int position, FILE* outStream){
   position++;
   register1[1] = line[position];
 
-  fprintf(outStream, "%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
+  fprintf(outStream, "\t%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
 
-  fclose(outStream);
   return 1;
 
 }
@@ -31,14 +30,14 @@ int MLT(char line[], int position){
 }
 
 
-int findOpcodes(char line[], int lineSize, FILE* outStream){
+int findOpcodes(char line[], int lineSize){
 
   //Iterate over the line
   for (int i = 0; i < lineSize; i ++){
     
     
     if (line[i] == 'R' && line[i + 1] == 'S' && line[i+2] == 'T'){
-      RST(line, i + 2, outStream);
+      RST(line, i + 2);
       return 1;
     }
     
@@ -67,23 +66,28 @@ int findOpcodes(char line[], int lineSize, FILE* outStream){
 
 }
 
-int main(void){
-  FILE* outStream = fopen("output.asm", "w");
+int main(int argc, char *argv[]){
+  //char inputFile[] = argv[1];
+  FILE* inStream = fopen(argv[1], "r");
+  outStream = fopen("output.asm", "w");
   
   char line[50];
   int position = 0;
   char c;
 
   int lineType;
-  while((c = getchar()) != EOF){ //Reads the next character from stdin
+  while((c = getc(inStream)) != EOF){
+
+    printf("%c", c);
+    
     line[position] = c;
     
     if (c == '\n'){
-      lineType = findOpcodes(line, position, outStream);
+      lineType = findOpcodes(line, position);
       if (lineType == 5){
 	for (int i = 0; i < position; i++){
 	  putc(line[i], outStream);
-	 }
+	}
 	fprintf(outStream, "%s", "\n");
       }
       position = -1;
@@ -91,6 +95,7 @@ int main(void){
   position++;
   }
 
+  fclose(inStream);
   fclose(outStream);
 }
 
