@@ -46,15 +46,21 @@ int SET(char line[], int position){
 
   int operandSize = getOperandSize(line, position);
 
-  char operand2[operandSize + 1] = "  ";
+  char operand2[operandSize];
+  printf("%d", operandSize);
 
-  for (int i = 0; i < operandSize - 2; i++){
+
+  for (int i = 0; i <= operandSize; i++){
     operand2[i] = line[position];
+    printf("%c", line[position]);
     position++;
+    
   }
+   operand2[operandSize] = '\0';
 
  fprintf(outStream, "\t%s\t%s, %s, %s\n", "AND", register1, register1, "#0");
- fprintf(outStream, "\t%s\t%s, %s, %s", "ADD", register1, register1, operand2);
+ fprintf(outStream, "\t%s\t%s, %s, %s\n", "ADD", register1, register1, operand2);
+ fprintf(outStream, "%s\t%s\n", register1, operand2);
   
 
   
@@ -162,7 +168,7 @@ int main(int argc, char *argv[]){
   int lineType;
   while((c = getc(inStream)) != EOF){
 
-    printf("%c", c);
+    
     
     line[position] = c;
     
