@@ -90,12 +90,14 @@ int SUB(char line[], int position){
    }
 
   if (line[position] == '#' || line[position] == 'x'){
-    thirdOperandType = 'x';
+    thirdOperandType = '#';
   }
 
   if (line[position] == 'R'){
     thirdOperandType = 'R';
   }
+
+  printf("%c", thirdOperandType);
 
   int operandSize = getOperandSize(line, position);
 
@@ -240,10 +242,8 @@ int main(int argc, char *argv[]){
     if (c == '\n'){
       lineType = findOpcodes(line, position);
       if (lineType == 5){
-	for (int i = 0; i < position; i++){
-	  putc(line[i], outStream);
-	}
-	fprintf(outStream, "%s", "\n");
+	line[position] = '\0';
+	fprintf(outStream, "%s\n", line);
       }
       position = -1;
      }
