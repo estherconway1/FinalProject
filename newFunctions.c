@@ -5,7 +5,7 @@ FILE* outStream;
 int findNextOperand(char line[], int position){
   while(line[position] != 'x' && line[position] != '#' && line[position] != 'R'){
     position++;
-    }
+  }
   return position;
 }
 
@@ -25,7 +25,6 @@ void storeOperand(char line[], char operand[],  int position, int operandSize){
   for (int i = 0; i <= operandSize; i++){
     operand[i] = line[position];
     position++;
-    printf("%c", line[position]);
   }
   
   operand[operandSize] = '\0';
@@ -33,14 +32,15 @@ void storeOperand(char line[], char operand[],  int position, int operandSize){
 }
 
 int RST(char line[], int position){
-  
+
+  //Get the register to reset
   position = findNextOperand(line, position);
   int size = getOperandSize(line, position);
   
   char register1[size];
-
   storeOperand(line, register1, position, size);
 
+  //Print the new instruction:
   fprintf(outStream, "\t%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
   
   return 1;
@@ -76,10 +76,12 @@ int MLT(char line[], int position){
   storeOperand(line, register3, position, size);
 
   //Print out the new instructions. Which are:
+  
   //Allocate a memory location
   fprintf(outStream, "\t%s\t%s\n", ".FILL", "#0");
   //Save the contents of the second operand register at that location
   fprintf(outStream, "\t%s\t%s%s\n", "ST", register2, ", #-2");
+  
   //Clear the destination register
   fprintf(outStream, "\t%s\t%s%s%s%s\n", "AND", register1, ", ", register1, ", #0");
  
@@ -87,6 +89,7 @@ int MLT(char line[], int position){
   fprintf(outStream, "\t%s\t%s%s%s%s%s\n", "ADD", register1, ", ", register1, ", ", register3);
   fprintf(outStream, "\t%s\t%s%s%s%s\n", "ADD", register2, ", ", register2, ", #-1");
   fprintf(outStream, "\t%s\t%s\n", "BRp", "#-3");
+  
   //Restore the contents of the counter register
   fprintf(outStream, "\t%s\t%s%s\n", "LD", register2, ", #-7");
  
@@ -156,7 +159,8 @@ int SUB(char line[], int position){
     fprintf(outStream, "\t%s%s%s%s%s%s\n", "ADD\t", register1, ", ", register2, ", ", operand3);
     fprintf(outStream, "\t%s\t%s%s\n", "LD", operand3, ", #-6");
   }
- 
+
+  
   if (operand3[0] == '#' || operand3[0] == 'x'){
     fprintf(outStream, "\t%s\t%s\n", ".FILL", "#0");
     fprintf(outStream, "\t%s\t%s%s\n", "ST", "R0", ", #-2");
@@ -172,6 +176,34 @@ int SUB(char line[], int position){
   return 1;
 }
 
+int NEG(char line[], int position){
+  //Get the destination register
+  position = findNextOperand(line, position);
+  int size = getOperandSize(line, position);
+  
+  char register1[size];
+
+  storeOperand(line, register1, position, size);
+  position++;
+
+  
+  //Get the register we're negating
+  position = findNextOperand(line, position);
+  size = getOperandSize(line, position);
+  
+  char register2[size];
+
+  storeOperand(line, register2, position, size);
+  
+
+  //Print the new instructions to the output file
+  fprintf(outStream, "\t%s\t%s%s%s\n", "NOT", register1, ", ", register2);
+  fprintf(outStream, "\t%s\t%s%s%s%s\n", "ADD", register1, ", ", register1, ", #1");
+
+  
+  
+}
+
 int findOpcodes(char line[], int lineSize){
    
   for (int i = 0; i < lineSize; i ++){
@@ -179,31 +211,31 @@ int findOpcodes(char line[], int lineSize){
     if (line[i] == 'R' && line[i + 1] == 'S' && line[i+2] == 'T'){
       RST(line, i + 2);
       return 1;
-    }
-    
+    }    
 
     if (line[i] == 'S' && line[i + 1] == 'E' && line[i + 2] == 'T'){
       SET(line, i + 2);
-      return 2;
-      
+      return 1;
     }
-    
 
     if (line[i] == 'S' && line[i + 1] == 'U' && line[i+2] == 'B'){
       SUB(line, i + 2);
-      return 3;
+      return 1;
+    }
+
+    if (line[i] == 'M' && line[i + 1] == 'L' && line[i+2] == 'T'){
+      MLT(line, i + 2);
+      return 1;
+    }
+
+    if (line[i] == 'N' && line[i + 1] == 'E' && line[i+2] == 'G'){
+      NEG(line, i + 2);
+      return 1;
     }
 
     
-    if (line[i] == 'M' && line[i + 1] == 'L' && line[i+2] == 'T'){
-      MLT(line, i + 2);
-      return 4;
-    }
-
-      
   }
-  return 5;
-
+  return 0;
 }
 
 
@@ -223,7 +255,7 @@ int main(int argc, char *argv[]){
     
     if (c == '\n'){
       lineType = findOpcodes(line, position);
-      if (lineType == 5){
+      if (lineType != 1){
 	line[position] = '\0';
 	fprintf(outStream, "%s\n", line);     
       }
