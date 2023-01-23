@@ -2,6 +2,7 @@
 
 FILE* outStream;
 
+//Searches for the position of next operand in the line of input
 int findNextOperand(char line[], int position){
   while(line[position] != 'x' && line[position] != '#' && line[position] != 'R'){
     position++;
@@ -9,17 +10,17 @@ int findNextOperand(char line[], int position){
   return position;
 }
 
-
+//Figures out how long the operand is
 int getOperandSize(char line[], int position){
   int size = 0;
-  while (line[position] != '\n' && line[position] != '\t' && line[position] != ' ' && line[position] != ',' && line[position] != ';'){
+  while (line[position] != '\n' && line[position] != '\t' && line[position] != ' ' && line[position] != ',' && line[position] != ';' &&  line[position] != '\0'){
     position++;
     size++;
   }
   return size;
 }
 
-
+//Stores the name of the operand in a string passed in from the caller function
 void storeOperand(char line[], char operand[],  int position, int operandSize){
   for (int i = 0; i <= operandSize; i++){
     operand[i] = line[position];
@@ -29,18 +30,29 @@ void storeOperand(char line[], char operand[],  int position, int operandSize){
   operand[operandSize] = '\0';
 }
 
-int checkOperand(char operand[], int operandSize){
-  if (operand[0] != 'R' && operand[0] != 'x' && operand[0] != '#'){
-    fprintf(stderr, "ERROR: IMPROPER OPERAND\n");
+//Ensures that an operand is in a proper format
+int checkOperand(char operand[], int operandSize, char type){
+
+   if (type == 'R' && operand[0] != 'R' ){
+    fprintf(stderr, "ERROR: OPERAND SHOULD BE A REGISTER, INSTRUCTION SKIPPED\n");
+    
     return 0;
   }
-  
-  for (int i = 1; i < operandSize; i++){
-    if (!(operand[i] >= '0' &&  operand[i] <= '9') || !(operand[i] >= 'A' && operand[i] <= 'F')){
-      fprintf(stderr, "ERROR: IMPROPER OPERAND\n");
+
+  if (type == 'S' && (operand[0] != 'x' && operand[0] != '#' && operand[0] != 'R')){
+    fprintf(stderr, "ERROR: IMPROPER OPERAND, INSTRUCTION SKIPPED\n");
+    
+    return 0;
+  }
+
+  for (int i = 1; i < operandSize + 1; i++){    
+    if (operand[i] != '0' && operand[i] != '1' && operand[i] != '2' && operand[i] != '3' && operand[i] != '4' && operand[i] != '5' && operand[i] != '6' && operand[i] != '7' && operand[i] != '7' && operand[i] != '8' && operand[i] != '9' && operand[i] != 'A' && operand[i] != 'B' && operand[i] != 'C' && operand[i] != 'D' && operand[i] != 'E' && operand[i] != 'F' && operand[i] != 'a' && operand[i] != 'b' && operand[i] != 'c' && operand[i] != 'd' && operand[i] != 'e' && operand[i] != 'f' ){
+      fprintf(stderr, "ERROR: IMPROPER OPERAND, INSTRUCTION SKIPPED\n");
       return 0;
     }
-  }
+
+  } 
+ 
   return 1;
 }
    
@@ -55,10 +67,10 @@ int RST(char line[], int position){
   char register1[size];
   storeOperand(line, register1, position, size);
 
-  if (register1[0] != 'R'){
-     fprintf(stderr, "IMPROPER OPERAND RST\n");
-     return 0;
-  }
+  if (checkOperand(register1, size, 'R') == 0)
+    {
+      return 0;
+    }
 
   //Print the new instruction:
   fprintf(outStream, "\t%s%s%s%s%s\n", "AND\t", register1, ", ", register1, ", #0");
@@ -78,9 +90,10 @@ int MLT(char line[], int position){
   storeOperand(line, register1, position, size);
   position++;
 
-  if (register1[0] != 'R'){
-     fprintf(stderr, "ERROR MLT: FIRST OPERAND SHOULD BE A REGISTER\n");
-  }
+  if (checkOperand(register1, size, 'R') == 0)
+    {
+      return 0;
+    }
 
   
   //Get the second Operand
@@ -92,9 +105,10 @@ int MLT(char line[], int position){
   storeOperand(line, register2, position, size);
   position++;
 
-  if (register2[0] != 'R'){
-     fprintf(stderr, "ERROR MLT: SECOND OPERAND SHOULD BE A REGISTER\n");
-  }
+  if (checkOperand(register2, size, 'R') == 0)
+    {
+      return 0;
+    }
 
   
   //Get the third Operand
@@ -104,6 +118,11 @@ int MLT(char line[], int position){
   char register3[size];
 
   storeOperand(line, register3, position, size);
+  
+  if (checkOperand(register3, size, 'R') == 0)
+    {
+      return 0;
+    }
 
   //Print out the new instructions. Which are:
   
@@ -137,7 +156,10 @@ int SET(char line[], int position){
   storeOperand(line, register1, position, size);
   position++;
 
- 
+  if (checkOperand(register1, size, 'R') == 0)
+    {
+      return 0;
+    } 
 
   //Get the second Operand
   position = findNextOperand(line, position);
@@ -147,6 +169,11 @@ int SET(char line[], int position){
 
   storeOperand(line, operand2, position, size);
   position++;
+
+  if (checkOperand(operand2, size, 'S') == 0)
+    {
+      return 0;
+    } 
 
   fprintf(outStream, "\t%s\t%s, %s, %s\n", "AND", register1, register1, "#0");
   fprintf(outStream, "\t%s\t%s, %s, %s\n", "ADD", register1, register1, operand2);
@@ -159,32 +186,38 @@ int SUB(char line[], int position){
   //Get the first Operand
   position = findNextOperand(line, position);
   int size = getOperandSize(line, position);
-  
   char register1[size];
-
   storeOperand(line, register1, position, size);
   position++;
+  if (checkOperand(register1, size, 'R') == 0)
+    {
+      return 0;
+    }
 
 
   //Get the second Operand
   position = findNextOperand(line, position);
   size = getOperandSize(line, position);
-  
   char register2[size];
-
   storeOperand(line, register2, position, size);
   position++;
+  if (checkOperand(register2, size, 'R') == 0)
+    {
+      return 0;
+    }
 
 
   //Get the third Operand
   position = findNextOperand(line, position);
   size = getOperandSize(line, position);
- 
-  
   char operand3[size];
-
   storeOperand(line, operand3, position, size);
   position++;
+
+  if (checkOperand(operand3, size, 'S') == 0)
+    {
+      return 0;
+    }
   
    
 
@@ -216,20 +249,24 @@ int NEG(char line[], int position){
   //Get the destination register
   position = findNextOperand(line, position);
   int size = getOperandSize(line, position);
-  
   char register1[size];
-
   storeOperand(line, register1, position, size);
   position++;
+  if (checkOperand(register1, size, 'R') == 0)
+    {
+      return 0;
+    }
 
   
   //Get the register we're negating
   position = findNextOperand(line, position);
   size = getOperandSize(line, position);
-  
   char register2[size];
-
   storeOperand(line, register2, position, size);
+  if (checkOperand(register2, size, 'R') == 0)
+    {
+      return 0;
+    }
   
 
   //Print the new instructions to the output file
@@ -240,7 +277,7 @@ int NEG(char line[], int position){
   
 }
 
-
+//Checks to see if there are any changes to make on the line of input
 int findOpcodes(char line[], int lineSize){
   
   for (int i = 0; i < lineSize; i ++){
@@ -275,9 +312,12 @@ int findOpcodes(char line[], int lineSize){
   return 0;
 }
 
+void getOutputFile(char inputFile[]){
+}
 
 int unitTests(void);  
 int main(int argc, char *argv[]){
+  printf("\n%d %s\n", unitTests(), "tests");
   
   FILE* inStream = fopen(argv[1], "r");
   outStream = fopen("output.asm", "w");
@@ -290,10 +330,13 @@ int main(int argc, char *argv[]){
   while((c = getc(inStream)) != EOF){
     
     line[position] = c;
-    
+
+    //When it reaches the end of the line
     if (c == '\n'){
+      //Check to see if there are any changes that have to be made
       lineType = findOpcodes(line, position);
       if (lineType != 1){
+	//If not, print out the line
 	line[position] = '\0';
 	fprintf(outStream, "%s\n", line);     
       }
@@ -303,7 +346,7 @@ int main(int argc, char *argv[]){
      }
   position++;
   }
-  printf("%d\n%s\n", unitTests(), "done");
+  
   fclose(inStream);
   fclose(outStream);
   
@@ -312,35 +355,103 @@ int main(int argc, char *argv[]){
 int testGetOperandSize(void){
   char test0[2] = " ";
   if (getOperandSize(test0, 0) != 0)
-    {return 0;}
+    {
+      return 0;
+    }
   
   char test1[7] = "R1, ";
   if (getOperandSize(test1, 0) != 2)
-    {return 0;}
+    {
+      printf("%s", "test1 failed");
+      return 0;
+    }
   
   char test2[25] = "R1, ; this is a comment ";
   if (getOperandSize(test2, 0) != 2)
-    {return 0;}
+    {
+      return 0;
+    }
 
   char test3[30] = "R1, R1, ; this is a comment ";
   if (getOperandSize(test3, 0) != 2)
-    {return 0;}
+    {
+      return 0;
+    }
 
-  char test4[30] = "R1, R1, ; this is a comment ";
-  if (getOperandSize(test4, 3) != 2)
-    {return 0;}
+  char test4[30] = "R1, R1 ; this is a comment ";
+  if (getOperandSize(test4, 4) != 2)
+    {
+      return 0;
+    }
 
+  char test5[34] = "R1, R1, #3 ; this is a comment ";
+  if (getOperandSize(test5, 4) != 2)
+    {
+      return 0;
+    }
+  
+  char test6[40] = "R1, R1, xFFFC ; this is a comment ";
+  if (getOperandSize(test6, 8) != 5)
+    {
+      return 0;
+    }
+
+  char test7[6] = "xFFFC";
+  if (getOperandSize(test7, 0) != 5)
+    {
+      return 0;
+    }
   return 1;
   
 }
-int testFindNextOperand(void){
+int testStoreOperand(void){
+  char operand1[3];
+
+  char test1[9] = "RST R1";
+  storeOperand(test1, operand1, 4, 2);
+
+  if (operand1[0] != 'R' && operand1[1] != '1'){
+    return 0;
+  }
+
+  char test2[15] = "SET R1, #3";
+  storeOperand(test2, operand1, 4, 2);
+
+  if (operand1[0] != 'R' && operand1[1] != '1'){
+    return 0;
+  }
+
+  storeOperand(test2, operand1, 8, 2);
+
+  if (operand1[0] != '#' && operand1[1] != '3'){
+    return 0;
+  }
+  
+
   return 1;
+  
+  
+}
+
+int testRST(void){
+  //outStream = "testRST.asm";
+  char test1[20] = "SET\tR1, #4";
+}
+
+int testFindOpcodes(void){
+  char test1[15] = "SUB\tR1, R2, R3";
+  if (findOpcodes(test1, 15) != 1){
+    return 0;
+  }
+  char test2[15] = "MLT\tR1, R3, R4";
+  if (findOpcodes(test2, 15) != 1){
+    return 0;
+  }
 }
   
 int unitTests(void){
   //testFindNextOperand();
-  return testGetOperandSize();
-  //testStoreOperand();
+  return testGetOperandSize() && testStoreOperand();
   //testRST();
   //testMLT();
   //testSET();
