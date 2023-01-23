@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 FILE* outStream;
 
@@ -32,22 +33,23 @@ void storeOperand(char line[], char operand[],  int position, int operandSize){
 
 //Ensures that an operand is in a proper format
 int checkOperand(char operand[], int operandSize, char type){
-
-   if (type == 'R' && operand[0] != 'R' ){
-    fprintf(stderr, "ERROR: OPERAND SHOULD BE A REGISTER, INSTRUCTION SKIPPED\n");
-    
+  if (operandSize < 2){
+    fprintf(stderr, "warning: improper operand, instruction skipped\n");
+    return 0;
+  }
+   if (type == 'R' && operand[0] != 'R'){
+     fprintf(stderr, "warning: improper operand, instruction skipped\n");
     return 0;
   }
 
   if (type == 'S' && (operand[0] != 'x' && operand[0] != '#' && operand[0] != 'R')){
-    fprintf(stderr, "ERROR: IMPROPER OPERAND, INSTRUCTION SKIPPED\n");
-    
+    fprintf(stderr, "warning: improper operand, instruction skipped\n");
     return 0;
   }
 
-  for (int i = 1; i < operandSize + 1; i++){    
-    if (operand[i] != '0' && operand[i] != '1' && operand[i] != '2' && operand[i] != '3' && operand[i] != '4' && operand[i] != '5' && operand[i] != '6' && operand[i] != '7' && operand[i] != '7' && operand[i] != '8' && operand[i] != '9' && operand[i] != 'A' && operand[i] != 'B' && operand[i] != 'C' && operand[i] != 'D' && operand[i] != 'E' && operand[i] != 'F' && operand[i] != 'a' && operand[i] != 'b' && operand[i] != 'c' && operand[i] != 'd' && operand[i] != 'e' && operand[i] != 'f' ){
-      fprintf(stderr, "ERROR: IMPROPER OPERAND, INSTRUCTION SKIPPED\n");
+  for (int i = 1; i < operandSize; i++){    
+    if (operand[i] != '0' && operand[i] != '1' && operand[i] != '2' && operand[i] != '3' && operand[i] != '4' && operand[i] != '5' && operand[i] != '6' && operand[i] != '7' && operand[i] != '7' && operand[i] != '8' && operand[i] != '9' && operand[i] != 'A' && operand[i] != 'B' && operand[i] != 'C' && operand[i] != 'D' && operand[i] != 'E' && operand[i] != 'F' && operand[i] != 'a' && operand[i] != 'b' && operand[i] != 'c' && operand[i] != 'd' && operand[i] != 'e' && operand[i] != 'f' && operand[i] != '-'){
+      fprintf(stderr, "warning: improper operand, instruction skipped\n");
       return 0;
     }
 
@@ -312,15 +314,25 @@ int findOpcodes(char line[], int lineSize){
   return 0;
 }
 
-void getOutputFile(char inputFile[]){
-}
 
 int unitTests(void);  
 int main(int argc, char *argv[]){
-  printf("\n%d %s\n", unitTests(), "tests");
+  if (unitTests() == 1){
+    printf("%s\n", "All tests passed. Ignore errors above");
+  }
+  //Accepts input file name as a command line argument, must end in the .asm extension for the code to work as expected
+  char * inputFile = argv[1];
+  int nameLen = strlen(inputFile);
+  nameLen = nameLen - 4;
+  FILE* inStream = fopen(inputFile, "r");
+
+  //The intermediary output file to be assembled by the assembler has the same name as the file without the .asm extension so that the .obj file name will look as expected (same as input + 'i')
+  char outputFile[nameLen + 1];
   
-  FILE* inStream = fopen(argv[1], "r");
-  outStream = fopen("output.asm", "w");
+  strncpy(outputFile, inputFile, nameLen);
+  strcat(outputFile, "i.asm");
+  
+  outStream = fopen(outputFile, "w");
   
   char line[50];
   int position = 0;
@@ -349,6 +361,11 @@ int main(int argc, char *argv[]){
   
   fclose(inStream);
   fclose(outStream);
+
+  char outputCommand[8] = "lc3as ";
+  
+  strcat(outputCommand, outputFile);
+  system(outputCommand);
   
 }
 
@@ -433,29 +450,94 @@ int testStoreOperand(void){
   
 }
 
-int testRST(void){
-  //outStream = "testRST.asm";
-  char test1[20] = "SET\tR1, #4";
+int testFindOpcodes(void){
+  char testSUB[15] = "SUB\tR1, R2, R3";
+  if (findOpcodes(testSUB, 14) != 1){
+    return 0;
+  }
+  char testMLT[15] = "MLT\tR1, R3, R4";
+  if (findOpcodes(testMLT, 14) != 1){
+    return 0;
+  }
+  char testSET[12] = "SET\tR1, #4";
+  if (findOpcodes(testSET, 11) != 1){
+    return 0;
+  }
+  char testNEG[12] = "NEG\tR1, R1";
+  if (findOpcodes(testSET, 11) != 1){
+    return 0;
+  }
+  return 1;
 }
 
-int testFindOpcodes(void){
-  char test1[15] = "SUB\tR1, R2, R3";
-  if (findOpcodes(test1, 15) != 1){
+int testCheckOperand(void){
+  char testReg[3] = "R5";
+   if (checkOperand(testReg, 2, 'R') != 1){
+     return 0;    
+  }
+   
+  char testDecPos[3] = "#1";
+  if (checkOperand(testDecPos, 2, 'S') != 1){
+    return 0;    
+  }
+  char testDecNeg[4] = "#-2";
+  if (checkOperand(testDecNeg, 3, 'S') != 1){
+    return 0;    
+  }
+  
+  char testHex[6] = "xE36F";
+  if (checkOperand(testHex, 5, 'S') != 1){
+    return 0;    
+  }
+  
+  char testRegB1[2] = "R";
+  if (checkOperand(testRegB1, 1, 'R') != 0){
     return 0;
   }
-  char test2[15] = "MLT\tR1, R3, R4";
-  if (findOpcodes(test2, 15) != 1){
+  
+  char testRegB2[2] = "3";
+  if (checkOperand(testRegB2, 1, 'R') != 0){
     return 0;
   }
+  
+  char testDecB2[2] = "2";
+  if (checkOperand(testDecB2, 1, 'S') != 0){
+    return 0;
+  }
+
+  char testDash[2] = "-";
+  if (checkOperand(testDash, 1, 'S') != 0){
+    return 0;
+  }
+  if (checkOperand(testDash, 1, 'R') != 0){
+    return 0;
+  }
+  char testX[2] = "x";
+  if (checkOperand(testX, 1, 'R') != 0){
+    return 0;
+  }
+  if (checkOperand(testX, 1, 'S') != 0){
+    return 0;
+  }
+  char testDecB1[2] = "#";
+  if (checkOperand(testDecB1, 1, 'R') != 0){
+    return 0;
+  }
+  if (checkOperand(testDecB1, 1, 'S') != 0){
+    return 0;
+  }
+  
+  return 1;
+  
 }
   
 int unitTests(void){
   //testFindNextOperand();
-  return testGetOperandSize() && testStoreOperand();
+  return testGetOperandSize() && testStoreOperand() && testCheckOperand(); //&& testFindOpcodes();
   //testRST();
   //testMLT();
   //testSET();
   //testSUB();
   //testNEG();
-  //testFindOpecodes();
+  
 }
