@@ -40,8 +40,14 @@ void storeOperand(char line[], char operand[],  int position, int operandSize){
 
 
 //Ensures that an operand is in a proper format
-int checkOperand(char operand[], int operandSize, char type){           //type is the type of operand. 'R' is register, 'S' is register or number
-
+int checkOperand(char operand[], int operandSize, char type){           //type is the type of operand. 'R' is register, 'S' is register or number, 'N' is number
+  if (type == 'N'){
+    if (operand[0] != 'x' && operand[0] != '#'){
+     fprintf(stderr, "warning: improper operand, instruction skipped\n");
+     return 0;
+    }
+    type = 'S';
+  }
   //Make sure the operand is the proper length
   if (operandSize < 2){
     fprintf(stderr, "warning: improper operand, instruction skipped\n");
@@ -54,6 +60,8 @@ int checkOperand(char operand[], int operandSize, char type){           //type i
       return 0;
     }
 
+    
+
   //If the operand must be a register, make sure it is actually a register
   if (type == 'R'){
     if (operand[0] != 'R'){
@@ -61,6 +69,10 @@ int checkOperand(char operand[], int operandSize, char type){           //type i
      return 0;
   }
   }
+
+  
+      
+ 
 
   //If the operand could be a register or a number, make sure it a properly formatted register or number
   if (type == 'S' && operand[0] != 'x' && operand[0] != '#' && operand[0] != 'R'){
@@ -218,7 +230,7 @@ int SET(char line[], int position){
   storeOperand(line, operand2, position, size);
   position++;
 
-  if (checkOperand(operand2, size, 'S') == 0)
+  if (checkOperand(operand2, size, 'N') == 0)
     {
       return 0;
     } 
@@ -638,7 +650,6 @@ int testFindNextOperand(void){
 
   char testNonsense[12] = "NEGfbeo R0";
   if (findNextOperand(testNonsense, 3) != '\0'){
-    printf("%s", "NONSENSE");
     return 0;
   }
   
@@ -716,7 +727,7 @@ int testGetOperand(void){
     return 0;
   }
 
-  //Test case to make sure that the code catches the 2 opcode situation properly
+  //Test case to make sure that the code catches a stituation in which there are two opcodes
 
   char testTwoOp[12] = "NEG RST R0";
   position = 3;
